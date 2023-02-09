@@ -1,0 +1,9 @@
+domain: wilda.fr
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: go-operator-quarkus-deploy
+repo: github.com/philippart-s/go-operator-quarkus-deploy
+version: "3"
