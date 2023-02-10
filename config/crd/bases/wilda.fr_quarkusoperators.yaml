@@ -35,10 +35,16 @@ spec:
           spec:
             description: QuarkusOperatorSpec defines the desired state of QuarkusOperator
             properties:
-              foo:
-                description: Foo is an example field of QuarkusOperator. Edit quarkusoperator_types.go
-                  to remove/update
+              imageVersion:
+                description: Image version for the quarkus hello world image
                 type: string
+              port:
+                description: Exposed port
+                format: int32
+                type: integer
+            required:
+            - imageVersion
+            - port
             type: object
           status:
             description: QuarkusOperatorStatus defines the observed state of QuarkusOperator
