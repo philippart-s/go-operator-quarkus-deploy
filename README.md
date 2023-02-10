@@ -25,7 +25,7 @@ quarkusoperators.wilda.fr   2022-09-01T06:43:36Z
 
 ## 👋  Hello World
  - la branche `03-hello-world` contient le résultat de cette étape
- - modifier le fichier `api/v1/suricateoperator_types.go`:
+ - modifier le fichier `api/v1/quarkusoperator_types.go`:
 ```go
 package v1
 
@@ -293,4 +293,67 @@ $ curl http://ptgtl8.nodes.c1.gra7.k8s.ovh.net:30080/hello
 kubectl get pod,svc  -n test-helloworld-operator
 No resources found in test-helloworld-operator namespace.
 ```
+ - supprimer le namespace `test-helloworld-operator` : `kubectl delete ns test-helloworld-operator`
+
+ ## 🐳 Packaging & deployment to K8s
+ - la branche `04-package-deploy` contient le résultat de cette étape
+ - modifier le controller `controllers/quarkusoperator_controller.go` pour les droits:
+```go
+// unmodified code ...
+
+//+kubebuilder:rbac:groups=wilda.fr,resources=quarkusoperators,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=wilda.fr,resources=quarkusoperators/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=wilda.fr,resources=quarkusoperators/finalizers,verbs=update
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
+
+// unmodified code ...
+```
+ - générer les RBAC dans `config/rbac/role.yaml` : `make manifests`
+ - modifier le Makefile:
+```makefile
+## unmodified code ...
+
+IMAGE_TAG_BASE ?= wilda/go-operator-samples
+
+## unmodified code ...
+
+IMG ?= $(IMAGE_TAG_BASE):$(VERSION)
+
+## unmodified code ...
+
+.PHONY: docker-build
+docker-build: #test ## Build docker image with the manager.
+	docker build -t ${IMG} .
+
+## unmodified code ...
+```
+ - lancer la création de l'image: `make docker-build`
+ - s'authentifier sur le docker hub : `docker login`
+ - push de l'image : `make docker-push`
+ - déployer l'opérateur dans Kubernetes : `make deploy`:
+```bash
+$ kubectl get deployment -n go-operator-quarkus-deploy-system
+
+NAME                                      			 READY   UP-TO-DATE   AVAILABLE   AGE
+go-operator-quarkus-deploy-controller-manager     1/1     1            1           79s
+```
+ - créer le namespace `test-helloworld-operator` : `kubectl create ns test-helloworld-operator`
+ - appliquer la CR : `kubectl apply -f ./config/samples/_v1_quarkusoperator.yaml -n test-helloworld-operator`
+ - vérifier que l'opérateur a fait le nécessaire: `kubectl get pod,svc  -n test-helloworld-operator`
+```bash
+$ kubectl get pod,svc  -n test-helloworld-operator
+NAME                                     READY   STATUS    RESTARTS   AGE
+pod/quarkus-deployment-5c56cbc47-4mqt2   1/1     Running   0          19s
+
+NAME                      TYPE       CLUSTER-IP   EXTERNAL-IP   PORT(S)        AGE
+service/quarkus-service   NodePort   X.X.X.X    <none>        80:30080/TCP   19s
+```
+ - tester dans un navigateur ou par un curl l'accès à `http://<node external ip>:30080/hello`, pour récupérer l'IP externe du node : `kubectl cluster-info`
+```bash
+$ curl http://xxxx.nodes.c1.xxxx.k8s.ovh.net:30080/hello
+👋  Hello, World ! 🌍
+```
+ - supprimer la CR : `kubectl delete quarkusoperators.wilda.fr/quarkusoperator-sample -n test-helloworld-operator` 
+ - undeploy de l'opérateur : `make undeploy`
  - supprimer le namespace `test-helloworld-operator` : `kubectl delete ns test-helloworld-operator`
