@@ -1,0 +1,33 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - wilda.fr
+  resources:
+  - quarkusoperators
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - wilda.fr
+  resources:
+  - quarkusoperators/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - wilda.fr
+  resources:
+  - quarkusoperators/status
+  verbs:
+  - get
+  - patch
+  - update

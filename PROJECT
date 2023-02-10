@@ -6,4 +6,13 @@ plugins:
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: go-operator-quarkus-deploy
 repo: github.com/philippart-s/go-operator-quarkus-deploy
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: wilda.fr
+  kind: QuarkusOperator
+  path: github.com/philippart-s/go-operator-quarkus-deploy/api/v1
+  version: v1
 version: "3"
